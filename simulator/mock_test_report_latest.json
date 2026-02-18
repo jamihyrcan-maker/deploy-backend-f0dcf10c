@@ -1,0 +1,102 @@
+{
+  "base": "http://127.0.0.1:8002",
+  "robot_id": "SIM-ROBOT-1",
+  "generated_at": "2026-02-03 14:46:51",
+  "results": [
+    {
+      "name": "GET /preflight/check",
+      "status": 200,
+      "preview": "{\"safe_mode\":false,\"robot_ids\":[\"SIM-ROBOT-1\",\"SIM-ROBOT-2\"],\"db\":{\"ok\":true,\"url\":\"sqlite:///./robot_backend.db\"},\"autox_config\":{\"ok\":true,\"base_url\":\"http://127.0.0.1:9001\",\"app_id_set\":true,\"app_secret_set\":true,\"app_code_set\":true},\"vendor_connectivity\":{\"ok\":true}}"
+    },
+    {
+      "name": "GET /robot-api/robots/{robot_id}/state",
+      "status": 200,
+      "preview": "{\"robotId\":\"SIM-ROBOT-1\",\"battery\":36.9,\"isOnline\":true,\"isCharging\":false,\"isEmergencyStop\":false,\"isManualMode\":false,\"moveState\":\"waiting\",\"areaId\":\"sim-area-1\",\"businessId\":\"mock-business\",\"raw\":{\"areaId\":\"sim-area-1\",\"battery\":36.9,\"isOnline\":true,\"isCharging\":false,\"isEmergencyStop\":false,\"isM..."
+    },
+    {
+      "name": "GET /robot-api/robots/{robot_id}/pois",
+      "status": 200,
+      "preview": "[{\"id\":\"sim-charge-1\",\"name\":\"Charging Station\",\"areaId\":\"sim-area-1\",\"coordinate\":[1.0,1.0],\"yaw\":0.0,\"raw\":{\"id\":\"sim-charge-1\",\"name\":\"Charging Station\",\"areaId\":\"sim-area-1\",\"coordinate\":[1.0,1.0],\"yaw\":0,\"kind\":\"CHARGING\"}},{\"id\":\"sim-kitchen-1\",\"name\":\"Kitchen\",\"areaId\":\"sim-area-1\",\"coordinat..."
+    },
+    {
+      "name": "POST /poi-mapping/auto-map",
+      "status": 200,
+      "preview": "{\"ok\":true,\"updated\":7,\"created\":0}"
+    },
+    {
+      "name": "GET /poi-mapping/mappings",
+      "status": 200,
+      "preview": "[{\"kind\":\"KITCHEN\",\"ref\":\"main\",\"poi_id\":\"sim-kitchen-1\",\"area_id\":\"sim-area-1\",\"label\":\"Kitchen\"},{\"kind\":\"OPERATOR\",\"ref\":\"main\",\"poi_id\":\"sim-operator-1\",\"area_id\":\"sim-area-1\",\"label\":\"Operator\"},{\"kind\":\"TABLE\",\"ref\":\"1\",\"poi_id\":\"sim-spot-1\",\"area_id\":\"sim-area-1\",\"label\":\"Table 1\"},{\"kind\":\"T..."
+    },
+    {
+      "name": "POST /poi-mapping/mappings",
+      "status": 200,
+      "preview": "{\"kind\":\"TABLE\",\"ref\":\"SMOKE1\",\"poi_id\":\"sim-charge-1\",\"area_id\":null,\"label\":\"Smoke Table\"}"
+    },
+    {
+      "name": "DELETE /poi-mapping/mappings/{kind}/{ref}",
+      "status": 200,
+      "preview": "{\"ok\":true}"
+    },
+    {
+      "name": "POST /task-manager/tasks",
+      "status": 200,
+      "preview": "{\"task_type\":\"NAVIGATE\",\"created_at\":\"2026-02-03T11:16:46.605266\",\"updated_at\":\"2026-02-03T11:16:46.605266\",\"notes\":null,\"target_ref\":\"sim-charge-1\",\"assigned_robot_id\":null,\"status\":\"READY\",\"id\":1128,\"title\":\"SimDemo\",\"target_kind\":\"POI\",\"release_at\":null,\"created_by\":\"operator\"}"
+    },
+    {
+      "name": "GET /task-manager/tasks",
+      "status": 200,
+      "preview": "[{\"task_type\":\"NAVIGATE\",\"created_at\":\"2026-02-03T11:16:46.605266\",\"updated_at\":\"2026-02-03T11:16:46.605266\",\"notes\":null,\"target_ref\":\"sim-charge-1\",\"assigned_robot_id\":null,\"status\":\"READY\",\"id\":1128,\"title\":\"SimDemo\",\"target_kind\":\"POI\",\"release_at\":null,\"created_by\":\"operator\"},{\"task_type\":\"CLE..."
+    },
+    {
+      "name": "PATCH /task-manager/tasks/{task_id}",
+      "status": 200,
+      "preview": "{\"task_type\":\"NAVIGATE\",\"created_at\":\"2026-02-03T11:16:46.605266\",\"updated_at\":\"2026-02-03T11:16:46.605266\",\"notes\":null,\"target_ref\":\"sim-charge-1\",\"assigned_robot_id\":null,\"status\":\"READY\",\"id\":1128,\"title\":\"SimDemo Updated\",\"target_kind\":\"POI\",\"release_at\":null,\"created_by\":\"operator\"}"
+    },
+    {
+      "name": "POST /queue-manager/tick",
+      "status": 500,
+      "preview": "Internal Server Error"
+    },
+    {
+      "name": "GET /queue-manager/queue",
+      "status": 200,
+      "preview": "{\"queue\":[{\"task_id\":852,\"task_type\":\"DELIVERY\",\"status\":\"READY\",\"title\":\"SimTask-19\",\"target_kind\":\"TABLE\",\"target_ref\":\"1\",\"release_at\":null,\"created_at\":\"2026-02-03T11:03:48.899308\",\"operator_override\":0,\"effective_priority\":101.29827878833333},{\"task_id\":854,\"task_type\":\"DELIVERY\",\"status\":\"READ..."
+    },
+    {
+      "name": "GET /queue-manager/stats",
+      "status": 200,
+      "preview": "{\"PENDING\":0,\"READY\":0,\"ASSIGNED\":0,\"DONE\":0,\"CANCELED\":0,\"TaskStatus.CANCELED\":15,\"TaskStatus.DONE\":162,\"TaskStatus.ASSIGNED\":1,\"TaskStatus.READY\":908,\"TaskStatus.PENDING\":42}"
+    },
+    {
+      "name": "POST /assignment/assign-next",
+      "status": 200,
+      "preview": "{\"assigned\":false,\"message\":\"No eligible robot found (robot busy).\"}"
+    },
+    {
+      "name": "POST /orchestrator/tick",
+      "status": 500,
+      "preview": "Internal Server Error"
+    },
+    {
+      "name": "GET /workflow-engine/runs",
+      "status": 200,
+      "preview": "[{\"id\":176,\"created_at\":\"2026-02-03T11:06:38.674388\",\"updated_at\":\"2026-02-03T11:06:44.237407\",\"task_id\":849,\"robot_id\":\"SIM-ROBOT-2\",\"status\":\"CANCELED\",\"current_step_index\":1,\"total_steps\":6,\"current_vendor_task_id\":null,\"last_error\":\"\\n[CANCELED] mock-cleanup\"},{\"id\":175,\"created_at\":\"2026-02-03T..."
+    },
+    {
+      "name": "POST /workflow-engine/tick",
+      "status": 200,
+      "preview": "{\"progressed_runs\":0,\"finished_runs\":0,\"failed_runs\":0}"
+    },
+    {
+      "name": "GET /realtime-bus/health",
+      "status": 200,
+      "preview": "{\"ok\":true,\"note\":\"Connect: ws://HOST/ws?api_key=YOUR_KEY . Publish (admin): POST /realtime-bus/publish\"}"
+    },
+    {
+      "name": "GET /dashboard/overview",
+      "status": 200,
+      "preview": "{\"robots\":[{\"robot_id\":\"SIM-ROBOT-1\",\"busy\":true,\"eligible\":false,\"reason\":null,\"state\":null},{\"robot_id\":\"SIM-ROBOT-2\",\"busy\":false,\"eligible\":true,\"reason\":null,\"state\":null}],\"queue_ready\":[{\"task_id\":852,\"task_type\":\"DELIVERY\",\"status\":\"READY\",\"title\":\"SimTask-19\",\"target_kind\":\"TABLE\",\"target_r..."
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+logs/
+__pycache__/
+*/__pycache__/
+*.pyc
+*.pyo
+*.db-journal
+robot_backend_review*.db
+robot_backend.db
+.vscode/
+
+# Environment files
+*.env
+!*.env.example
+!*.secrets.env.example

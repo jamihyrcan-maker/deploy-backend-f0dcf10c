@@ -1,0 +1,95 @@
+{
+  "map": {
+    "areaId": "sim-area-1",
+    "width": 20,
+    "height": 12,
+    "charging": {
+      "id": "sim-charge-1",
+      "name": "Charging Station",
+      "areaId": "sim-area-1",
+      "coordinate": [1.0, 1.0],
+      "yaw": 0,
+      "kind": "CHARGING"
+    },
+    "pois": [
+      { "id": "sim-kitchen-1", "name": "Kitchen", "areaId": "sim-area-1", "coordinate": [18.0, 10.0], "yaw": 90, "kind": "KITCHEN" },
+      { "id": "sim-operator-1", "name": "Operator", "areaId": "sim-area-1", "coordinate": [10.0, 11.0], "yaw": 180, "kind": "OPERATOR" },
+      { "id": "sim-spot-1", "name": "Table 1", "areaId": "sim-area-1", "coordinate": [3.0, 3.0], "yaw": 10, "kind": "TABLE" },
+      { "id": "sim-spot-2", "name": "Table 2", "areaId": "sim-area-1", "coordinate": [5.0, 4.0], "yaw": 20, "kind": "TABLE" },
+      { "id": "sim-spot-3", "name": "Table 3", "areaId": "sim-area-1", "coordinate": [7.0, 3.5], "yaw": 30, "kind": "TABLE" },
+      { "id": "sim-spot-4", "name": "Table 4", "areaId": "sim-area-1", "coordinate": [9.0, 4.5], "yaw": 40, "kind": "TABLE" },
+      { "id": "sim-spot-5", "name": "Table 5", "areaId": "sim-area-1", "coordinate": [11.0, 3.2], "yaw": 50, "kind": "TABLE" },
+      { "id": "sim-spot-6", "name": "Table 6", "areaId": "sim-area-1", "coordinate": [13.0, 4.1], "yaw": 60, "kind": "TABLE" },
+      { "id": "sim-spot-7", "name": "Table 7", "areaId": "sim-area-1", "coordinate": [15.0, 3.8], "yaw": 70, "kind": "TABLE" },
+      { "id": "sim-spot-8", "name": "Table 8", "areaId": "sim-area-1", "coordinate": [4.0, 7.0], "yaw": 80, "kind": "TABLE" },
+      { "id": "sim-spot-9", "name": "Table 9", "areaId": "sim-area-1", "coordinate": [6.0, 7.5], "yaw": 90, "kind": "TABLE" },
+      { "id": "sim-spot-10", "name": "Table 10", "areaId": "sim-area-1", "coordinate": [8.0, 8.0], "yaw": 100, "kind": "TABLE" },
+      { "id": "sim-spot-11", "name": "Table 11", "areaId": "sim-area-1", "coordinate": [12.0, 7.2], "yaw": 110, "kind": "TABLE" },
+      { "id": "sim-spot-12", "name": "Table 12", "areaId": "sim-area-1", "coordinate": [14.0, 8.1], "yaw": 120, "kind": "TABLE" }
+    ]
+  },
+  "robots": {
+    "SIM-ROBOT-1": {
+      "areaId": "sim-area-1",
+      "battery": 82,
+      "isOnline": true,
+      "isCharging": false,
+      "isEmergencyStop": false,
+      "isManualMode": false,
+      "moveState": "idle",
+      "businessId": "mock-business",
+      "buildingId": "mock-building",
+      "x": 2.0,
+      "y": 2.0
+    },
+    "SIM-ROBOT-2": {
+      "areaId": "sim-area-1",
+      "battery": 67,
+      "isOnline": true,
+      "isCharging": false,
+      "isEmergencyStop": false,
+      "isManualMode": false,
+      "moveState": "idle",
+      "businessId": "mock-business",
+      "buildingId": "mock-building",
+      "x": 16.0,
+      "y": 9.0
+    }
+  },
+  "pois": {
+    "SIM-ROBOT-1": [
+      { "id": "sim-charge-1", "name": "Charging Station", "areaId": "sim-area-1", "coordinate": [1.0, 1.0], "yaw": 0, "kind": "CHARGING" },
+      { "id": "sim-kitchen-1", "name": "Kitchen", "areaId": "sim-area-1", "coordinate": [18.0, 10.0], "yaw": 90, "kind": "KITCHEN" },
+      { "id": "sim-operator-1", "name": "Operator", "areaId": "sim-area-1", "coordinate": [10.0, 11.0], "yaw": 180, "kind": "OPERATOR" },
+      { "id": "sim-spot-1", "name": "Table 1", "areaId": "sim-area-1", "coordinate": [3.0, 3.0], "yaw": 10, "kind": "TABLE" },
+      { "id": "sim-spot-2", "name": "Table 2", "areaId": "sim-area-1", "coordinate": [5.0, 4.0], "yaw": 20, "kind": "TABLE" },
+      { "id": "sim-spot-3", "name": "Table 3", "areaId": "sim-area-1", "coordinate": [7.0, 3.5], "yaw": 30, "kind": "TABLE" },
+      { "id": "sim-spot-4", "name": "Table 4", "areaId": "sim-area-1", "coordinate": [9.0, 4.5], "yaw": 40, "kind": "TABLE" },
+      { "id": "sim-spot-5", "name": "Table 5", "areaId": "sim-area-1", "coordinate": [11.0, 3.2], "yaw": 50, "kind": "TABLE" },
+      { "id": "sim-spot-6", "name": "Table 6", "areaId": "sim-area-1", "coordinate": [13.0, 4.1], "yaw": 60, "kind": "TABLE" },
+      { "id": "sim-spot-7", "name": "Table 7", "areaId": "sim-area-1", "coordinate": [15.0, 3.8], "yaw": 70, "kind": "TABLE" },
+      { "id": "sim-spot-8", "name": "Table 8", "areaId": "sim-area-1", "coordinate": [4.0, 7.0], "yaw": 80, "kind": "TABLE" },
+      { "id": "sim-spot-9", "name": "Table 9", "areaId": "sim-area-1", "coordinate": [6.0, 7.5], "yaw": 90, "kind": "TABLE" },
+      { "id": "sim-spot-10", "name": "Table 10", "areaId": "sim-area-1", "coordinate": [8.0, 8.0], "yaw": 100, "kind": "TABLE" },
+      { "id": "sim-spot-11", "name": "Table 11", "areaId": "sim-area-1", "coordinate": [12.0, 7.2], "yaw": 110, "kind": "TABLE" },
+      { "id": "sim-spot-12", "name": "Table 12", "areaId": "sim-area-1", "coordinate": [14.0, 8.1], "yaw": 120, "kind": "TABLE" }
+    ],
+    "SIM-ROBOT-2": [
+      { "id": "sim-charge-1", "name": "Charging Station", "areaId": "sim-area-1", "coordinate": [1.0, 1.0], "yaw": 0, "kind": "CHARGING" },
+      { "id": "sim-kitchen-1", "name": "Kitchen", "areaId": "sim-area-1", "coordinate": [18.0, 10.0], "yaw": 90, "kind": "KITCHEN" },
+      { "id": "sim-operator-1", "name": "Operator", "areaId": "sim-area-1", "coordinate": [10.0, 11.0], "yaw": 180, "kind": "OPERATOR" },
+      { "id": "sim-spot-1", "name": "Table 1", "areaId": "sim-area-1", "coordinate": [3.0, 3.0], "yaw": 10, "kind": "TABLE" },
+      { "id": "sim-spot-2", "name": "Table 2", "areaId": "sim-area-1", "coordinate": [5.0, 4.0], "yaw": 20, "kind": "TABLE" },
+      { "id": "sim-spot-3", "name": "Table 3", "areaId": "sim-area-1", "coordinate": [7.0, 3.5], "yaw": 30, "kind": "TABLE" },
+      { "id": "sim-spot-4", "name": "Table 4", "areaId": "sim-area-1", "coordinate": [9.0, 4.5], "yaw": 40, "kind": "TABLE" },
+      { "id": "sim-spot-5", "name": "Table 5", "areaId": "sim-area-1", "coordinate": [11.0, 3.2], "yaw": 50, "kind": "TABLE" },
+      { "id": "sim-spot-6", "name": "Table 6", "areaId": "sim-area-1", "coordinate": [13.0, 4.1], "yaw": 60, "kind": "TABLE" },
+      { "id": "sim-spot-7", "name": "Table 7", "areaId": "sim-area-1", "coordinate": [15.0, 3.8], "yaw": 70, "kind": "TABLE" },
+      { "id": "sim-spot-8", "name": "Table 8", "areaId": "sim-area-1", "coordinate": [4.0, 7.0], "yaw": 80, "kind": "TABLE" },
+      { "id": "sim-spot-9", "name": "Table 9", "areaId": "sim-area-1", "coordinate": [6.0, 7.5], "yaw": 90, "kind": "TABLE" },
+      { "id": "sim-spot-10", "name": "Table 10", "areaId": "sim-area-1", "coordinate": [8.0, 8.0], "yaw": 100, "kind": "TABLE" },
+      { "id": "sim-spot-11", "name": "Table 11", "areaId": "sim-area-1", "coordinate": [12.0, 7.2], "yaw": 110, "kind": "TABLE" },
+      { "id": "sim-spot-12", "name": "Table 12", "areaId": "sim-area-1", "coordinate": [14.0, 8.1], "yaw": 120, "kind": "TABLE" }
+    ]
+  }
+}

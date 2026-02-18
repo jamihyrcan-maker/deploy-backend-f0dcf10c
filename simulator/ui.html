@@ -1,0 +1,650 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Sim Map</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 20px; }
+      #map { border: 1px solid #333; background: #f7f7f7; }
+      .legend { margin-top: 10px; font-size: 14px; }
+      .legend span { display: inline-block; margin-right: 12px; }
+      .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; }
+      #confirmPanel {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        width: 220px;
+        border: 1px solid #ccc;
+        background: #fff;
+        padding: 10px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        font-size: 13px;
+      }
+      .confirm-title { font-weight: bold; margin-bottom: 8px; }
+      .confirm-row { margin-bottom: 10px; }
+      .confirm-label { margin-bottom: 4px; }
+      .confirm-btn { width: 100%; padding: 6px; border: none; color: #fff; cursor: pointer; }
+      .confirm-btn.ready { background: #2f9e44; }
+      .confirm-btn.disabled { background: #999; cursor: not-allowed; }
+      .confirm-status { margin-top: 6px; color: #b00020; }
+      #robotPanel {
+        position: fixed;
+        top: 300px;
+        right: 20px;
+        width: 220px;
+        border: 1px solid #ccc;
+        background: #fff;
+        padding: 10px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        font-size: 13px;
+      }
+      .robot-title { font-weight: bold; margin-bottom: 8px; }
+      .robot-row { margin-bottom: 10px; }
+      .robot-btn { width: 100%; padding: 6px; border: none; color: #fff; cursor: pointer; }
+      .robot-btn.online { background: #2f9e44; }
+      .robot-btn.offline { background: #999; }
+    </style>
+  </head>
+  <body>
+    <h2>Simulator Map</h2>
+    <div class="legend" style="margin-bottom:10px;">
+      <button id="restartBtn">Start / Restart Restaurant</button>
+      <span id="restartStatus" style="margin-left:10px;"></span>
+    </div>
+    <div class="legend" style="margin-bottom:10px;">
+      <label for="tableSelect">Table:</label>
+      <select id="tableSelect"></select>
+      <label for="taskSelect" style="margin-left:8px;">Task:</label>
+      <select id="taskSelect">
+        <option value="ORDERING">ORDERING</option>
+        <option value="DELIVERY">DELIVERY</option>
+        <option value="CLEANUP">CLEANUP</option>
+        <option value="BILLING">BILLING</option>
+        <option value="NAVIGATE">NAVIGATE</option>
+      </select>
+      <label for="releaseAt" style="margin-left:8px;">Release at (ISO):</label>
+      <input id="releaseAt" type="text" size="20" placeholder="2026-02-07T15:30:00Z">
+      <label for="releaseDelay" style="margin-left:8px;">Delay (s):</label>
+      <input id="releaseDelay" type="number" min="0" step="1" value="0" style="width:70px;">
+      <button id="createBtn" style="margin-left:8px;">Create Task</button>
+      <button id="createAssignBtn">Create + Assign</button>
+      <span id="createStatus" style="margin-left:10px;"></span>
+    </div>
+    <div class="legend" style="margin-bottom:10px;">
+      <label><input id="autoCreateToggle" type="checkbox"> Auto create</label>
+      <label for="autoCreateInterval" style="margin-left:8px;">every</label>
+      <input id="autoCreateInterval" type="number" min="1" step="1" value="10" style="width:60px;">
+      <span>sec</span>
+      <span id="autoCreateStatus" style="margin-left:10px;"></span>
+    </div>
+    <div class="legend" style="margin-bottom:10px;">
+      <label><input id="autoAssignToggle" type="checkbox"> Auto assign</label>
+      <label for="autoAssignInterval" style="margin-left:8px;">every</label>
+      <input id="autoAssignInterval" type="number" min="1" step="1" value="10" style="width:60px;">
+      <span>sec</span>
+      <label for="autoAssignMax" style="margin-left:8px;">max</label>
+      <input id="autoAssignMax" type="number" min="1" step="1" value="2" style="width:50px;">
+      <span id="autoAssignStatus" style="margin-left:10px;"></span>
+    </div>
+    <canvas id="map" width="800" height="480"></canvas>
+    <div class="legend">
+      <span><span class="dot" style="background:#2a6fdb"></span>Table</span>
+      <span><span class="dot" style="background:#f08c00"></span>Operator</span>
+      <span><span class="dot" style="background:#d9480f"></span>Kitchen</span>
+      <span><span class="dot" style="background:#2f9e44"></span>Charging</span>
+      <span><span class="dot" style="background:#000"></span>Robot</span>
+    </div>
+    <div id="status"></div>
+    <h3>Queue (live)</h3>
+    <div id="queueStats"></div>
+    <ul id="queueList"></ul>
+    <h3>Pending (scheduled)</h3>
+    <div id="pendingStats"></div>
+    <ul id="pendingList"></ul>
+    <h3>All Tasks (monitor)</h3>
+    <div id="tasksStats"></div>
+    <table id="tasksTable" border="1" cellpadding="4" cellspacing="0" style="border-collapse:collapse; font-size:12px;">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Robot</th>
+          <th>Created</th>
+          <th>Started</th>
+          <th>Finished</th>
+          <th>Target</th>
+          <th>Title</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <div id="confirmPanel">
+      <div class="confirm-title">Confirm</div>
+      <div class="confirm-row">
+        <div id="confirmLabel1" class="confirm-label">SIM-ROBOT-1: idle</div>
+        <button id="confirmBtn1" class="confirm-btn disabled" disabled>Confirm</button>
+      </div>
+      <div class="confirm-row">
+        <div id="confirmLabel2" class="confirm-label">SIM-ROBOT-2: idle</div>
+        <button id="confirmBtn2" class="confirm-btn disabled" disabled>Confirm</button>
+      </div>
+      <div id="confirmStatus" class="confirm-status"></div>
+    </div>
+    <div id="robotPanel">
+      <div class="robot-title">Robot Connection</div>
+      <div id="robotList"></div>
+    </div>
+
+    <script>
+      const canvas = document.getElementById('map');
+      const ctx = canvas.getContext('2d');
+      const statusEl = document.getElementById('status');
+      const restartBtn = document.getElementById('restartBtn');
+      const restartStatus = document.getElementById('restartStatus');
+      const tableSelect = document.getElementById('tableSelect');
+      const taskSelect = document.getElementById('taskSelect');
+      const releaseAtInput = document.getElementById('releaseAt');
+      const releaseDelayInput = document.getElementById('releaseDelay');
+      const createBtn = document.getElementById('createBtn');
+      const createAssignBtn = document.getElementById('createAssignBtn');
+      const createStatus = document.getElementById('createStatus');
+      const tasksStats = document.getElementById('tasksStats');
+      const tasksTableBody = document.querySelector('#tasksTable tbody');
+      const autoCreateToggle = document.getElementById('autoCreateToggle');
+      const autoCreateIntervalInput = document.getElementById('autoCreateInterval');
+      const autoCreateStatus = document.getElementById('autoCreateStatus');
+      const autoAssignToggle = document.getElementById('autoAssignToggle');
+      const autoAssignIntervalInput = document.getElementById('autoAssignInterval');
+      const autoAssignMaxInput = document.getElementById('autoAssignMax');
+      const autoAssignStatus = document.getElementById('autoAssignStatus');
+      const confirmLabel1 = document.getElementById('confirmLabel1');
+      const confirmLabel2 = document.getElementById('confirmLabel2');
+      const confirmBtn1 = document.getElementById('confirmBtn1');
+      const confirmBtn2 = document.getElementById('confirmBtn2');
+      const confirmStatus = document.getElementById('confirmStatus');
+      const robotList = document.getElementById('robotList');
+      let confirmTargets = { 'SIM-ROBOT-1': null, 'SIM-ROBOT-2': null };
+      let createBusy = false;
+      let assignBusy = false;
+      let autoCreateTimer = null;
+      let autoAssignTimer = null;
+
+      function colorForKind(kind) {
+        if (kind === 'KITCHEN') return '#d9480f';
+        if (kind === 'OPERATOR') return '#f08c00';
+        if (kind === 'CHARGING') return '#2f9e44';
+        return '#2a6fdb';
+      }
+
+      function draw(state) {
+        const map = state.map || { width: 20, height: 12 };
+        const w = map.width || 20;
+        const h = map.height || 12;
+        const scaleX = canvas.width / w;
+        const scaleY = canvas.height / h;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // draw grid
+        ctx.strokeStyle = '#e0e0e0';
+        for (let x = 0; x <= w; x += 1) {
+          ctx.beginPath();
+          ctx.moveTo(x * scaleX, 0);
+          ctx.lineTo(x * scaleX, canvas.height);
+          ctx.stroke();
+        }
+        for (let y = 0; y <= h; y += 1) {
+          ctx.beginPath();
+          ctx.moveTo(0, y * scaleY);
+          ctx.lineTo(canvas.width, y * scaleY);
+          ctx.stroke();
+        }
+
+        // pois
+        const pois = state.pois || [];
+        pois.forEach(p => {
+          const c = p.coordinate || [0,0];
+          const x = c[0] * scaleX;
+          const y = c[1] * scaleY;
+          ctx.fillStyle = colorForKind(p.kind);
+          ctx.beginPath();
+          ctx.arc(x, y, 6, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#000';
+          ctx.font = '10px Arial';
+          ctx.fillText(p.name || p.id, x + 8, y - 8);
+        });
+
+        // robots
+        const robots = state.robots || [];
+        robots.forEach(r => {
+          const x = (r.x || 0) * scaleX;
+          const y = (r.y || 0) * scaleY;
+          ctx.fillStyle = '#000';
+          ctx.beginPath();
+          ctx.arc(x, y, 7, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#000';
+          ctx.font = '11px Arial';
+          ctx.fillText(r.robotId + ' (' + (r.battery || 0) + '%)', x + 10, y + 12);
+        });
+      }
+
+      function updateTables(state) {
+        const pois = state.pois || [];
+        const tables = pois.filter(p => (p.kind || '').toUpperCase() === 'TABLE');
+        const existing = new Set(Array.from(tableSelect.options).map(o => o.value));
+        if (tables.length && existing.size !== tables.length) {
+          tableSelect.innerHTML = '';
+          tables.forEach(p => {
+            const name = p.name || p.id || '';
+            const m = name.match(/(\d+)/);
+            const ref = m ? m[1] : name;
+            const opt = document.createElement('option');
+            opt.value = ref;
+            opt.textContent = name;
+            tableSelect.appendChild(opt);
+          });
+        }
+        if (!tableSelect.options.length) {
+          const opt = document.createElement('option');
+          opt.value = '1';
+          opt.textContent = 'Table 1';
+          tableSelect.appendChild(opt);
+        }
+      }
+
+      function renderQueue(data) {
+        const list = document.getElementById('queueList');
+        const stats = document.getElementById('queueStats');
+        const pList = document.getElementById('pendingList');
+        const pStats = document.getElementById('pendingStats');
+        list.innerHTML = '';
+        pList.innerHTML = '';
+        if (!data || !data.ok) {
+          stats.textContent = 'Queue unavailable';
+          return;
+        }
+        if (data.stats) {
+          stats.textContent = 'Stats: ' + JSON.stringify(data.stats);
+          const s = data.stats;
+          const pending = Number(s.PENDING || 0);
+          const ready = Number(s.READY || 0);
+          const assigned = Number(s.ASSIGNED || 0);
+          const done = Number(s.DONE || 0);
+          const canceled = Number(s.CANCELED || 0);
+          if (pending + ready + assigned > 0) {
+            statusEl.textContent = 'Status: RUNNING';
+          } else if (done + canceled > 0) {
+            statusEl.textContent = 'Status: IDLE (done)';
+          } else {
+            statusEl.textContent = 'Status: IDLE';
+          }
+        }
+        const items = data.queue || [];
+        if (!items.length) {
+          const li = document.createElement('li');
+          li.textContent = 'Queue empty';
+          list.appendChild(li);
+          return;
+        }
+        items.forEach(t => {
+          const li = document.createElement('li');
+          li.textContent = `#${t.task_id} ${t.title} (${t.task_type}) priority=${t.effective_priority?.toFixed?.(2) ?? t.effective_priority}`;
+          list.appendChild(li);
+        });
+
+        const pend = data.pending || [];
+        pStats.textContent = 'Pending: ' + pend.length;
+        if (!pend.length) {
+          const li = document.createElement('li');
+          li.textContent = 'No pending tasks';
+          pList.appendChild(li);
+        } else {
+          pend.forEach(t => {
+            const li = document.createElement('li');
+            li.textContent = `#${t.task_id} ${t.title} (${t.task_type}) release_at=${t.release_at || 'n/a'}`;
+            pList.appendChild(li);
+          });
+        }
+      }
+
+      function setConfirmButton(btn, labelEl, target) {
+        if (!target || target.step_type !== 'MANUAL_CONFIRM') {
+          btn.disabled = true;
+          btn.classList.add('disabled');
+          btn.classList.remove('ready');
+          labelEl.textContent = `${target?.robot_id || labelEl.textContent.split(':')[0]}: idle`;
+          return;
+        }
+        btn.disabled = false;
+        btn.classList.remove('disabled');
+        btn.classList.add('ready');
+        labelEl.textContent = `${target.robot_id}: ${target.step_code || 'confirm'}`;
+      }
+
+      async function renderRuns() {
+        try {
+          const res = await fetch('/sim/runs');
+          const data = await res.json();
+          if (!data || !data.ok) {
+            confirmStatus.textContent = 'Confirm unavailable';
+            return;
+          }
+          const runs = data.runs || [];
+          confirmTargets = { 'SIM-ROBOT-1': null, 'SIM-ROBOT-2': null };
+          runs.forEach(r => {
+            if (r.robot_id && confirmTargets.hasOwnProperty(r.robot_id)) {
+              confirmTargets[r.robot_id] = r;
+            }
+          });
+          setConfirmButton(confirmBtn1, confirmLabel1, confirmTargets['SIM-ROBOT-1']);
+          setConfirmButton(confirmBtn2, confirmLabel2, confirmTargets['SIM-ROBOT-2']);
+          confirmStatus.textContent = '';
+        } catch (e) {
+          confirmStatus.textContent = 'Confirm unavailable';
+        }
+      }
+
+      function renderTasks(data) {
+        tasksTableBody.innerHTML = '';
+        if (!data || !data.ok) {
+          tasksStats.textContent = 'Tasks unavailable';
+          return;
+        }
+        const tasks = data.tasks || [];
+        tasksStats.textContent = `Tasks: ${tasks.length}`;
+        if (!tasks.length) {
+          const tr = document.createElement('tr');
+          const td = document.createElement('td');
+          td.colSpan = 9;
+          td.textContent = 'No tasks';
+          tr.appendChild(td);
+          tasksTableBody.appendChild(tr);
+          return;
+        }
+        tasks.forEach(t => {
+          const tr = document.createElement('tr');
+          const cells = [
+            t.task_id,
+            t.task_type,
+            t.status,
+            t.assigned_robot_id || '',
+            t.created_at || '',
+            t.started_at || '',
+            t.finished_at || '',
+            `${t.target_kind || ''}:${t.target_ref || ''}`,
+            t.title || '',
+          ];
+          cells.forEach(v => {
+            const td = document.createElement('td');
+            td.textContent = v == null ? '' : String(v);
+            tr.appendChild(td);
+          });
+          tasksTableBody.appendChild(tr);
+        });
+      }
+
+      async function tick() {
+        try {
+          const res = await fetch('/sim/state');
+          const data = await res.json();
+          updateTables(data);
+          draw(data);
+          renderRobotConnections(data);
+          const q = await fetch('/sim/queue');
+          const qdata = await q.json();
+          renderQueue(qdata);
+          await renderRuns();
+          const t = await fetch('/sim/tasks');
+          const tdata = await t.json();
+          renderTasks(tdata);
+          await fetch('/sim/workflow-tick', { method: 'POST' });
+          statusEl.textContent = statusEl.textContent || ('Updated: ' + new Date().toLocaleTimeString());
+        } catch (e) {
+          statusEl.textContent = 'Error loading state';
+        }
+      }
+
+      function renderRobotConnections(state) {
+        if (!state || !state.robots) return;
+        const robots = state.robots || [];
+        robots.forEach(r => {
+          const rid = r.robotId;
+          if (!rid) return;
+          let row = document.getElementById('robot-row-' + rid);
+          if (!row) {
+            row = document.createElement('div');
+            row.className = 'robot-row';
+            row.id = 'robot-row-' + rid;
+
+            const label = document.createElement('div');
+            label.id = 'robot-label-' + rid;
+            label.textContent = rid;
+
+            const btn = document.createElement('button');
+            btn.id = 'robot-btn-' + rid;
+            btn.className = 'robot-btn offline';
+            btn.textContent = 'Offline';
+            btn.addEventListener('click', async () => {
+              const isOnline = btn.dataset.online === 'true';
+              const next = !isOnline;
+              btn.disabled = true;
+              try {
+                const params = new URLSearchParams({ robot_id: rid, online: next ? '1' : '0' });
+                await fetch('/sim/robot/online?' + params.toString(), { method: 'POST' });
+              } catch (e) {}
+              btn.disabled = false;
+              tick();
+            });
+
+            row.appendChild(label);
+            row.appendChild(btn);
+            robotList.appendChild(row);
+          }
+
+          const btn = document.getElementById('robot-btn-' + rid);
+          const label = document.getElementById('robot-label-' + rid);
+          const online = r.isOnline !== false;
+          if (label) {
+            label.textContent = `${rid}: ${online ? 'online' : 'offline'}`;
+          }
+          if (btn) {
+            btn.dataset.online = online ? 'true' : 'false';
+            btn.className = 'robot-btn ' + (online ? 'online' : 'offline');
+            btn.textContent = online ? 'Online (click to go offline)' : 'Offline (click to go online)';
+          }
+        });
+      }
+
+      async function restartRestaurant() {
+        restartBtn.disabled = true;
+        restartStatus.textContent = 'Restarting...';
+        try {
+          const res = await fetch('/sim/restart', { method: 'POST' });
+          const text = await res.text();
+          let data = null;
+          try {
+            data = JSON.parse(text);
+          } catch (e) {
+            data = null;
+          }
+          if (data && data.ok) {
+            restartStatus.textContent = `Restarted. Created ${data.created} tasks across ${data.tables} tables.`;
+          } else {
+            const msg = (data && (data.detail || data.error || data.last_error || data.status)) || text || 'unknown error';
+            restartStatus.textContent = `Restart failed: ${msg}`;
+          }
+        } catch (e) {
+          restartStatus.textContent = 'Restart failed: network error';
+        }
+        restartBtn.disabled = false;
+        tick();
+      }
+
+      restartBtn.addEventListener('click', restartRestaurant);
+
+      function computeReleaseAt() {
+        const raw = (releaseAtInput.value || '').trim();
+        if (raw) return raw;
+        const delaySec = Number(releaseDelayInput.value || 0);
+        if (!Number.isNaN(delaySec) && delaySec > 0) {
+          return new Date(Date.now() + (delaySec * 1000)).toISOString();
+        }
+        return '';
+      }
+
+      async function createTask(tickAfter, statusEl) {
+        if (createBusy) return;
+        createBusy = true;
+        createBtn.disabled = true;
+        createAssignBtn.disabled = true;
+        const statusTarget = statusEl || createStatus;
+        statusTarget.textContent = 'Creating...';
+        const tableRef = tableSelect.value || '1';
+        const taskType = taskSelect.value || 'ORDERING';
+        const params = new URLSearchParams({
+          table_ref: tableRef,
+          task_type: taskType,
+          tick: tickAfter ? '1' : '0',
+        });
+        const releaseAt = computeReleaseAt();
+        if (releaseAt) {
+          params.set('release_at', releaseAt);
+        }
+        try {
+          const res = await fetch('/sim/create-task?' + params.toString(), { method: 'POST' });
+          const text = await res.text();
+          let data = null;
+          try {
+            data = JSON.parse(text);
+          } catch (e) {
+            data = null;
+          }
+          if (data && data.ok) {
+            statusTarget.textContent = `Created ${taskType} for table ${tableRef}`;
+          } else {
+            const msg = (data && (data.detail || data.error || data.last_error || data.status)) || text || 'unknown error';
+            statusTarget.textContent = `Create failed: ${msg}`;
+          }
+        } catch (e) {
+          statusTarget.textContent = 'Create failed: network error';
+        }
+        createBtn.disabled = false;
+        createAssignBtn.disabled = false;
+        createBusy = false;
+        tick();
+      }
+
+      async function runAssignTick(statusEl) {
+        if (assignBusy) return;
+        assignBusy = true;
+        const statusTarget = statusEl || autoAssignStatus;
+        statusTarget.textContent = 'Assigning...';
+        const maxAssign = Math.max(1, parseInt(autoAssignMaxInput.value || '2', 10) || 2);
+        const params = new URLSearchParams({ max_assignments: String(maxAssign) });
+        try {
+          const res = await fetch('/sim/orchestrator-tick?' + params.toString(), { method: 'POST' });
+          const text = await res.text();
+          let payload = null;
+          try { payload = JSON.parse(text); } catch (e) {}
+          if (payload && payload.ok) {
+            const assigned = payload.data?.assigned;
+            const promoted = payload.data?.promoted;
+            statusTarget.textContent = `Assigned ${assigned ?? '?'} (promoted ${promoted ?? '?'})`;
+          } else {
+            const msg = (payload && (payload.error || payload.status || payload.raw)) || text || 'unknown error';
+            statusTarget.textContent = `Assign failed: ${msg}`;
+          }
+        } catch (e) {
+          statusTarget.textContent = 'Assign failed: network error';
+        }
+        assignBusy = false;
+        tick();
+      }
+
+      function refreshAutoCreateTimer() {
+        if (autoCreateTimer) {
+          clearInterval(autoCreateTimer);
+          autoCreateTimer = null;
+        }
+        if (!autoCreateToggle.checked) {
+          autoCreateStatus.textContent = 'Auto create: off';
+          return;
+        }
+        const sec = Math.max(1, parseInt(autoCreateIntervalInput.value || '10', 10) || 10);
+        autoCreateStatus.textContent = `Auto create: every ${sec}s`;
+        autoCreateTimer = setInterval(() => {
+          createTask(false, autoCreateStatus);
+        }, sec * 1000);
+      }
+
+      function refreshAutoAssignTimer() {
+        if (autoAssignTimer) {
+          clearInterval(autoAssignTimer);
+          autoAssignTimer = null;
+        }
+        if (!autoAssignToggle.checked) {
+          autoAssignStatus.textContent = 'Auto assign: off';
+          return;
+        }
+        const sec = Math.max(1, parseInt(autoAssignIntervalInput.value || '10', 10) || 10);
+        autoAssignStatus.textContent = `Auto assign: every ${sec}s`;
+        autoAssignTimer = setInterval(() => {
+          runAssignTick(autoAssignStatus);
+        }, sec * 1000);
+      }
+
+      createBtn.addEventListener('click', () => createTask(false, createStatus));
+      createAssignBtn.addEventListener('click', () => createTask(true, createStatus));
+      autoCreateToggle.addEventListener('change', refreshAutoCreateTimer);
+      autoCreateIntervalInput.addEventListener('change', refreshAutoCreateTimer);
+      autoAssignToggle.addEventListener('change', refreshAutoAssignTimer);
+      autoAssignIntervalInput.addEventListener('change', refreshAutoAssignTimer);
+      autoAssignMaxInput.addEventListener('change', refreshAutoAssignTimer);
+      confirmBtn1.addEventListener('click', async () => {
+        const target = confirmTargets['SIM-ROBOT-1'];
+        if (!target || target.step_type !== 'MANUAL_CONFIRM') return;
+        confirmBtn1.disabled = true;
+        try {
+          const res = await fetch(`/sim/confirm?run_id=${encodeURIComponent(target.run_id)}&auto=1`, { method: 'POST' });
+          const txt = await res.text();
+          let payload = null;
+          try { payload = JSON.parse(txt); } catch (e) {}
+          if (!payload || !payload.ok) {
+            confirmStatus.textContent = 'Confirm failed: ' + (payload?.raw || txt);
+          }
+        } catch (e) {
+          confirmStatus.textContent = 'Confirm failed: network error';
+        }
+        confirmBtn1.disabled = false;
+        tick();
+      });
+
+      confirmBtn2.addEventListener('click', async () => {
+        const target = confirmTargets['SIM-ROBOT-2'];
+        if (!target || target.step_type !== 'MANUAL_CONFIRM') return;
+        confirmBtn2.disabled = true;
+        try {
+          const res = await fetch(`/sim/confirm?run_id=${encodeURIComponent(target.run_id)}&auto=1`, { method: 'POST' });
+          const txt = await res.text();
+          let payload = null;
+          try { payload = JSON.parse(txt); } catch (e) {}
+          if (!payload || !payload.ok) {
+            confirmStatus.textContent = 'Confirm failed: ' + (payload?.raw || txt);
+          }
+        } catch (e) {
+          confirmStatus.textContent = 'Confirm failed: network error';
+        }
+        confirmBtn2.disabled = false;
+        tick();
+      });
+
+      setInterval(tick, 1000);
+      tick();
+      refreshAutoCreateTimer();
+      refreshAutoAssignTimer();
+    </script>
+  </body>
+</html>
