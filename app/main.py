@@ -55,6 +55,14 @@ def create_app() -> FastAPI:
         title="Backend - Robot API + Tasks/Queue/Priority + Workflow + WS + Dashboard + Monitor + Controls",
     )
 
+    @app.get("/")
+    def root_health() -> dict[str, str]:
+        return {"status": "ok", "service": "backend"}
+
+    @app.get("/healthz")
+    def healthz() -> dict[str, str]:
+        return {"status": "ok"}
+
     # Request correlation
     app.add_middleware(RequestIdMiddleware)
     app.add_middleware(
